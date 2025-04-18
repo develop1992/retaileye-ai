@@ -3,19 +3,15 @@ from datetime import datetime
 
 def detect_motion(video_path, output_path=None):
     cap = cv2.VideoCapture(video_path)
-
     if not cap.isOpened():
         print(f"Error opening video file: {video_path}")
-        return
+        return []
 
-    # Frame for diff comparison
     ret, frame1 = cap.read()
     ret, frame2 = cap.read()
-
     motion_events = []
     height, width = frame1.shape[:2]
 
-    # Setup for output video
     if output_path:
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(output_path, fourcc, 20.0, (width, height))
@@ -54,7 +50,6 @@ def detect_motion(video_path, output_path=None):
         ret, frame2 = cap.read()
         frame_count += 1
 
-        # log frame count every 500 frames (~16 seconds @ 30 FPS)
         if frame_count % 500 == 0:
             print(f"Processing frame {frame_count}...")
 
