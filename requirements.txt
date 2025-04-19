@@ -1,0 +1,23 @@
+# Core web framework
+fastapi==0.115.12
+
+# ASGI server for running FastAPI (includes uvloop, httptools, etc.)
+uvicorn[standard]==0.34.2
+
+# HTTP client for sending incident data to backend
+requests==2.32.3
+
+# Video processing for motion detection
+opencv-python==4.11.0.86
+
+# Used for numerical operations (OpenCV depends on it)
+numpy==2.2.4
+
+# For loading environment variables from .env files
+python-dotenv==1.1.0
+
+# To listen for key presses during manual recording
+keyboard==0.13.5
+
+# Required for handling form-data/file uploads (optional, but future-proof)
+python-multipart
