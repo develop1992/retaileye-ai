@@ -7,5 +7,3 @@ class Incident(BaseModel):
     severity: str
     status: str
     description: str
-    recordingDto: Optional[dict] = None
-    managerDto: Optional[dict] = None

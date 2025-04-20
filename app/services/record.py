@@ -1,13 +1,14 @@
 import cv2
 import datetime
 import os
+from app.config import IVCAM_INDEX
 
 def record_ivcam(output_dir: str, duration_sec: int = 10) -> str:
     os.makedirs(output_dir, exist_ok=True)
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(IVCAM_INDEX)
 
     if not cap.isOpened():
-        raise RuntimeError("Could not access the camera.")
+        raise RuntimeError(f"Could not access camera at index {IVCAM_INDEX}.")
 
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
