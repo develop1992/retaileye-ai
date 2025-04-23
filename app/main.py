@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from threading import Thread
 from app.routes import router
-from app.services.rtmp_capture import capture_rtmp_stream
+from app.services.rtmp_capture import capture_rtmp_forever
 # from app.config import ENABLE_AUTO_RECORDING
 
 # for automatic iVCam recording
@@ -17,7 +17,7 @@ from app.services.rtmp_capture import capture_rtmp_stream
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Start RTMP listener in background
-    Thread(target=capture_rtmp_stream, daemon=True).start()
+    Thread(target=capture_rtmp_forever, daemon=True).start()
     yield
     print("[INFO] FastAPI shutdown complete.")
 
