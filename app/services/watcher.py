@@ -10,7 +10,7 @@ def wait_for_ivcam_and_record(poll_interval=5, max_attempts=30):
     while attempts < max_attempts:
         cap = cv2.VideoCapture(IVCAM_INDEX)
         if cap.isOpened():
-            print(f"[✅] iVCam detected at index {IVCAM_INDEX}. Starting recording...")
+            print(f"\n iVCam detected at index {IVCAM_INDEX}. Starting recording...")
             cap.release()
             record_ivcam(RECORDINGS_DIR, duration_sec=10)
             return
