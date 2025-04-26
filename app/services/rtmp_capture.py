@@ -17,23 +17,33 @@ from typing import List
 
 from app.config import RECORDINGS_DIR, RTMP_STREAM_URL
 
-CAMERA_SERIAL_NUMBER = "CAMERA-001"  # Hardcoded serialNumber for body camera
+# Hardcoded serial number for the body camera used in the system
+CAMERA_SERIAL_NUMBER = "CAMERA-001"
 
 # Initialize timezones
 utc_timezone = pytz.utc
 est_timezone = pytz.timezone("US/Eastern")
 
+# Function to check if the RTMP stream is live
 def is_rtmp_stream_live(url: str) -> bool:
+    """
+    Probes the RTMP stream using FFmpeg to check if the stream is live.
+
+    Args:
+        url (str): The RTMP stream URL to check.
+
+    Returns:
+        bool: True if the stream is live, False otherwise.
+    """
     print(f"[DEBUG] Probing stream with ffmpeg at {url}")
     try:
+        # Use ffmpeg to probe the stream
         result = subprocess.run([
             "C:/ffmpeg/bin/ffmpeg.exe",
-            "-y",
-            "-t", "1",
-            "-i", url,
-            "-f", "null", "-"
+            "-y", "-t", "1", "-i", url, "-f", "null", "-"
         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
+        # Check if the stream is live based on the output from ffmpeg
         if "Press [q] to stop" in result.stderr or result.returncode == 0:
             print("\n Stream is LIVE")
             return True
@@ -44,31 +54,46 @@ def is_rtmp_stream_live(url: str) -> bool:
         print(f"\n Probe error: {e}")
         return False
 
+# Function to record and detect motion in an RTMP stream
 def record_and_detect_live(duration_sec=60):
+    """
+    Captures video from an RTMP stream, detects motion, and sends incidents to the backend.
+
+    Args:
+        duration_sec (int): The duration for recording and detecting motion in seconds.
+
+    Returns:
+        str: The path to the saved video file.
+    """
+    # Create a timestamp for the video file name
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_path = os.path.join(RECORDINGS_DIR, f"live_rtmp_{timestamp}.mp4")
-    os.makedirs(RECORDINGS_DIR, exist_ok=True)
+    os.makedirs(RECORDINGS_DIR, exist_ok=True)  # Ensure the recordings directory exists
 
+    # Initialize video capture from the RTMP stream
     cap = cv2.VideoCapture(RTMP_STREAM_URL)
     if not cap.isOpened():
         print("\n Failed to open RTMP stream!")
         return None
 
+    # Get video frame properties like width, height, and FPS
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) or 1280
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) or 720
     fps = int(cap.get(cv2.CAP_PROP_FPS)) or 25
 
+    # Prepare the video writer to save the captured video
     fourcc = cv2.VideoWriter_fourcc(*'avc1')
     out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
     print(f"\n Capturing and analyzing stream for {duration_sec}s...")
 
+    # Read the first two frames
     ret, prev = cap.read()
     if not ret:
         print("\n No frame received from stream.")
         return None
 
-    motion_events = []
+    motion_events = []  # List to store detected motion events
 
     # Get start time in UTC and convert to EST
     start_time_utc = datetime.now(utc_timezone)
@@ -77,22 +102,26 @@ def record_and_detect_live(duration_sec=60):
     start = time.time()
     frame_count = 0
 
+    # Process video frames for the specified duration
     while time.time() - start < duration_sec:
         ret, frame = cap.read()
         if not ret:
             print("\n Dropped frame")
             break
 
+        # Detect motion in the current frame
         result = detect_motion_frame(prev, frame, frame_count)
-        out.write(result["frame"])
+        out.write(result["frame"])  # Write the frame to output file
 
+        # If motion is detected, add it to the list of motion events
         if result["event"]:
             motion_events.append(result["event"])
             print(f" Motion detected: {result['event']}")
 
-        prev = frame
+        prev = frame  # Update the previous frame
         frame_count += 1
 
+    # Release the video capture and writer objects
     cap.release()
     out.release()
 
@@ -103,11 +132,11 @@ def record_and_detect_live(duration_sec=60):
     print(f"\n Video saved to: {output_path}")
 
     try:
-
-        # 1. Send recording info
+        # Send recording metadata to the backend
         file_name = os.path.basename(output_path)
         file_size = str(os.path.getsize(output_path))
 
+        # Create the recording object with metadata
         recording = Recording(
             filePath=output_path,
             fileName=file_name,
@@ -118,9 +147,10 @@ def record_and_detect_live(duration_sec=60):
             bodyCameraDto=BodyCamera(serialNumber=CAMERA_SERIAL_NUMBER),
         )
 
+        # Send the recording to the backend
         recording_id = send_recording(recording)
 
-        # 2. Send incidents if detected
+        # If motion events were detected, send them as incidents to the backend
         if motion_events:
             incidents: List[Incident] = [
                 Incident(
@@ -139,16 +169,21 @@ def record_and_detect_live(duration_sec=60):
 
     return output_path
 
+# Function to continuously capture and analyze RTMP streams
 def capture_rtmp_forever():
+    """
+    Continuously listens for an RTMP stream to become available, then captures and analyzes it.
+    This function runs indefinitely.
+    """
     print("\n Listening for RTMP streams forever...")
 
     while True:
-        # Wait for stream to go live
+        # Wait for the RTMP stream to go live
         while not is_rtmp_stream_live(RTMP_STREAM_URL):
             print("[...] Still waiting...")
             time.sleep(2)
 
-        # Run real-time detection + recording logic
+        # Run the motion detection and recording logic when the stream is live
         record_and_detect_live(duration_sec=60)
 
         # Small delay before checking again

@@ -1,14 +1,14 @@
 
 # RetailEye AI - Motion Detection and Incident Reporting
 
-RetailEye AI is a motion detection system designed to monitor surveillance footage in real time. Built with **FastAPI**, and **OpenCV**. The system processes live-streamed videos and recorded footage to detect motion and send incidents to a backend API. This project is designed for retail security applications where surveillance data needs to be analyzed in real time for suspicious activity.
+RetailEye AI is a motion detection system designed to monitor surveillance footage in real time. Built with **FastAPI**, and **OpenCV**. The system processes live-streamed videos and recorded footage to detect motion and send incidents and recordings to [RetailEye API](https://github.com/develop1992/retaileye-api). This project is designed for retail security applications where surveillance data needs to be analyzed in real time for suspicious activity.
 
 ## Key Features
 
 - **Real-time Motion Detection**: Capture and analyze video streams or recordings to detect motion using **OpenCV**.
 - **Incident Reporting**: When motion is detected, incidents are reported to a backend system for logging and further analysis.
 - **Video Recording**: Record live video footage for incident documentation and future reference.
-- **API Integration**: Integrates with a Spring Boot backend API to send recorded video data and detected incidents.
+- **API Integration**: Integrates with [RetailEye API](https://github.com/develop1992/retaileye-api) to send recorded video data and detected incidents.
 
 ## Folder Structure
 
@@ -59,7 +59,7 @@ Handles the process of sending detected incidents to the backend API for further
 #### `send_recording.py`
 Handles sending video recording metadata (such as file path, file name, and size) to the backend API.
 
-#### `record.py`
+#### `rtmp_capture.py`
 Handles capturing video streams, recording them, and invoking the motion detection service.
 
 ## How to Run
