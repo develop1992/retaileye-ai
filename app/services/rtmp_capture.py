@@ -144,6 +144,7 @@ def record_and_detect_live(duration_sec=60):
             fileSize=file_size,
             startTime=start_time_est,
             endTime=end_time_est,
+            isAnalyzed=False,
             bodyCameraDto=BodyCamera(serialNumber=CAMERA_SERIAL_NUMBER),
         )
 

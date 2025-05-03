@@ -19,7 +19,7 @@ def detect_motion(video_path, output_path=None):
 
     # Prepare the video writer if an output path is specified
     if output_path:
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Define video codec
+        fourcc = cv2.VideoWriter_fourcc(*'avc1')  # Define video codec
         out = cv2.VideoWriter(output_path, fourcc, 20.0, (width, height))
     else:
         out = None  # No output video

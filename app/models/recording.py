@@ -11,4 +11,5 @@ class Recording(BaseModel):
     fileSize: Optional[str] = None
     startTime: Optional[datetime] = None
     endTime: Optional[datetime] = None
+    isAnalyzed: Optional[bool] = None
     bodyCameraDto: Optional[BodyCamera] = None
